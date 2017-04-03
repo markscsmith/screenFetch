@@ -1496,10 +1496,11 @@ detectshell () {
 				shell_type=$(cat /proc/$PPID/cmdline|tr '\0' '\n'|head -n 1)
 			elif [[ "${distro}" == "Mac OS X" || "${distro}" == "DragonFlyBSD" || "${distro}" == "FreeBSD" || "${distro}" == "OpenBSD" || "${distro}" == "NetBSD" ]]; then
 				shell_type=$(ps -p $PPID -o command | tail -1)
-			elif readlink -f "$SHELL" | grep -q "busybox"; then
-            	shell_type="BusyBox"
 			else
 				shell_type=$(ps -p $(ps -p $PPID | awk '$1 !~ /PID/ {print $1}') | awk 'FNR>1 {print $1}')
+			fi
+			if [[ $(ls -ls ${SHELL} | grep busybox) ]]; then
+			    shell_type="BusyBox"
 			fi
 			shell_type=${shell_type/-}
 			shell_type=${shell_type//*\/}
@@ -1615,11 +1616,7 @@ detectde () {
 					}')
 				fi
 			fi
-
-			if [[ ${DE} == "Not Present" ]]; then
-				# Let's use xdg-open code for GNOME/Enlightment/KDE/LXDE/MATE/Xfce detection
-				# http://bazaar.launchpad.net/~vcs-imports/xdg-utils/master/view/head:/scripts/xdg-utils-common.in#L251
-				if [ -n "${XDG_CURRENT_DESKTOP}" ]; then
+			if [ -n "${XDG_CURRENT_DESKTOP}" ]; then
 					case "${XDG_CURRENT_DESKTOP}" in
 						ENLIGHTENMENT)
 							DE=Enlightenment;
@@ -1651,8 +1648,15 @@ detectde () {
 						LXQt)
 							DE=LXQt
 							;;
+						*)
+						    DE="Not Present"
+						    ;;
 					esac
 				fi
+
+			if [[ ${DE} == "Not Present" ]]; then
+				# Let's use xdg-open code for GNOME/Enlightment/KDE/LXDE/MATE/Xfce detection
+				# http://bazaar.launchpad.net/~vcs-imports/xdg-utils/master/view/head:/scripts/xdg-utils-common.in#L251
 
 				if [ -n "$DE" ]; then
 					# classic fallbacks
