@@ -1499,12 +1499,12 @@ detectshell () {
 			else
 				shell_type=$(ps -p $(ps -p $PPID | awk '$1 !~ /PID/ {print $1}') | awk 'FNR>1 {print $1}')
 			fi
-			if [[ $(ls -ls ${SHELL} | grep busybox) ]]; then
-			    shell_type="BusyBox"
-			fi
 			shell_type=${shell_type/-}
 			shell_type=${shell_type//*\/}
 		fi
+		if [[ $(ls -ls ${SHELL} | grep busybox) ]]; then
+        	shell_type="BusyBox"
+        fi
 	fi
 
 	case $shell_type in
